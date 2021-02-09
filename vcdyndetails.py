@@ -8,8 +8,7 @@ from typing import List
 
 import mdutils.mdutils as mdu
 import anticrlf
-#from veracode_api_py import VeracodeAPI as vapi
-from helpers.api import VeracodeAPI as vapi
+from veracode_api_py import VeracodeAPI as vapi
 
 log = logging.getLogger(__name__)
 
@@ -67,10 +66,11 @@ def write_findings_to_md(appinfo,findings_details_list):
     status = 'Writing findings information to vcdyndetails.md....'
     print(status)
     log.info(status)
+
     mdfile = mdu.MdUtils(file_name='vcdyndetails.md',title='Veracode Dynamic Findings Details')
     mdfile.new_paragraph("This document shows dynamic finding information and request/response information from Veracode.")
     mdfile.new_header(level=1, title="Application: {}".format(appinfo['profile']['name']),add_table_of_contents='n')
-    # mdfile.new_table_of_contents(table_title='Table of Contents',depth=2)
+    
     for finding in findings_details_list:
         fin = finding['finding']
         rr = finding['request_response']
@@ -84,6 +84,7 @@ def write_findings_to_md(appinfo,findings_details_list):
         mdfile.new_paragraph("**Recommendation**: {}".format(rr['issue_summary']['recommendation']))
         mdfile.new_header(level=3, title="Request",add_table_of_contents='n')
         vectors = rr['dynamic_flaw_info']['request']['attack_vectors']
+
         for vector in vectors:
             mdfile.new_paragraph("**Attack Vector**: {} ({})".format(vector['name'],vector['type']))
             mdfile.new_paragraph("**Original Value**: {}".format(vector['original_value']))
@@ -93,6 +94,7 @@ def write_findings_to_md(appinfo,findings_details_list):
         mdfile.new_header(level=3, title="Response",add_table_of_contents='n')
         mdfile.insert_code(rr['dynamic_flaw_info']['response']['raw_bytes'],language='html')
         mdfile.new_paragraph('')
+
     mdfile.create_md_file()
 
 
