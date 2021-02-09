@@ -33,10 +33,21 @@ def get_app(app_guid):
 def get_findings(app_info, cwes:List[int], categories:List[int]):
     log.info('Getting findings for application {} (guid {})'.format(app_info['profile']['name'],app_info['guid']))
     all_findings = []
-    for cwe in cwes:
-        params = {'cwe': cwe}
-        these_findings = vapi().get_findings(app_info['guid'],scantype='DYNAMIC',annot='FALSE',request_params=params)
+
+    if cwes != None:
+        for cwe in cwes:
+            params = {'cwe': cwe}
+            these_findings = vapi().get_findings(app_info['guid'],scantype='DYNAMIC',annot='FALSE',request_params=params)
+            all_findings.extend(these_findings)
+    elif categories != None:
+        for cat in categories:
+            params = { 'finding_category': cat}
+            these_findings = vapi().get_findings(app_info['guid'],scantype='DYNAMIC',annot='FALSE',request_params=params)
+            all_findings.extend(these_findings)
+    else:
+        these_findings = vapi().get_findings(app_info['guid'], scantype='DYNAMIC', annot='FALSE')
         all_findings.extend(these_findings)
+
     return all_findings
 
 def get_request_response(findings_list):
@@ -78,17 +89,19 @@ def write_findings_to_md(appinfo,findings_details_list):
             mdfile.new_paragraph("**Original Value**: {}".format(vector['original_value']))
             mdfile.new_paragraph("**Injected Value**: {}".format(vector['injected_value']))
         mdfile.insert_code(rr['dynamic_flaw_info']['request']['raw_bytes'],language='text')
+        mdfile.new_paragraph('')
         mdfile.new_header(level=3, title="Response",add_table_of_contents='n')
         mdfile.insert_code(rr['dynamic_flaw_info']['response']['raw_bytes'],language='html')
+        mdfile.new_paragraph('')
     mdfile.create_md_file()
 
 
 def main():
     parser = argparse.ArgumentParser(
         description='This script lists modules in which static findings were identified.')
-    parser.add_argument('-a', '--application', help='Application guid to check for dynamic findings.', default='6c96da18-ae69-44c9-aed9-4910c036b82e')
-    parser.add_argument('-w', '--cwe', required=False, help='List of CWEs to include in the output.', default=[526,80]) 
-    parser.add_argument('-g', '--category', required=False, help='List of categories to include in the output.') 
+    parser.add_argument('-a', '--application', required=True, help='Application guid to check for dynamic findings.')
+    parser.add_argument('-w', '--cwe', required=False, type=int, nargs='+',help='List of CWEs to include in the output.') 
+    parser.add_argument('-g', '--category', required=False, type=int, nargs='+', help='List of categories to include in the output.') 
 
     args = parser.parse_args()
 

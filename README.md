@@ -37,7 +37,9 @@ Arguments supported include:
 * `--cwe`, `-w` (opt): list of CWEs to include in the output. Use one of `--cwe`, `--category`
 * `--category`, `-g` (opt): list of finding categories to include in the output. Use one of `--cwe`, `--category`
 
+If neither `--cwe` or `--category` are used, the preview will contain all findings for the application.
+
 ## NOTES
 
 1. This script runs on dynamic findings only.
-1. All values are output to a Markdown file, `vcdyndetails.md`. 
+1. All values are output to a Markdown file, `vcdyndetails.md`. There are many Markdown previewers available for Mac, Linux and Windows, or you can use an online previewer like [Dillinger](https://dillinger.io/).
