@@ -4,6 +4,7 @@ import logging
 import json
 import datetime
 import csv
+from urllib import parse
 from typing import List
 
 import mdutils.mdutils as mdu
@@ -28,6 +29,27 @@ def creds_expire_days_warning():
 
 def get_app(app_guid):
     return vapi().get_app(app_guid)
+
+def prompt_for_app():
+    appguid = ""
+    app_name_search = input("Please enter the application name to search for: ")
+    app_candidates = vapi().get_app_by_name(parse.quote(app_name_search))
+    if len(app_candidates) == 0:
+        print("No matches were found!")
+    elif len(app_candidates) > 1:
+        print("Please choose an application:")
+        for idx, appitem in enumerate(app_candidates,start=1):
+            print("{}) {}".format(idx, appitem["profile"]["name"]))
+        i = input("Enter number: ")
+        try:
+            if 0 < int(i) <= len(app_candidates):
+                appguid = app_candidates[int(i)-1].get('guid')
+        except:
+            appguid = ""
+    else:
+        appguid = app_candidates[0].get('guid')
+
+    return appguid
 
 def get_findings(app_info, cwes:List[int], categories:List[int]):
     log.info('Getting findings for application {} (guid {})'.format(app_info['profile']['name'],app_info['guid']))
@@ -101,7 +123,8 @@ def write_findings_to_md(appinfo,findings_details_list):
 def main():
     parser = argparse.ArgumentParser(
         description='This script lists modules in which static findings were identified.')
-    parser.add_argument('-a', '--application', required=True, help='Application guid to check for dynamic findings.')
+    parser.add_argument('-a', '--application', help='Application guid to check for dynamic findings.')
+    parser.add_argument('-p', '--prompt', action='store_true', help='Specify to search for an application by name')
     parser.add_argument('-w', '--cwe', required=False, type=int, nargs='+',help='List of CWEs to include in the output.') 
     parser.add_argument('-g', '--category', required=False, type=int, nargs='+', help='List of categories to include in the output.') 
 
@@ -110,10 +133,19 @@ def main():
     appguid = args.application
     cwelist = args.cwe
     categorylist = args.category
+    prompt = args.prompt
     setup_logger()
 
     # CHECK FOR CREDENTIALS EXPIRATION
     creds_expire_days_warning()
+
+    if prompt:
+        appguid = prompt_for_app()
+        if appguid == "":
+            return
+    elif appguid == None:
+            print("Either specify an application with -a or prompt for application with -p")
+            return
 
     status = "Checking application {} for a list of findings".format(appguid)
     log.info(status)
@@ -122,6 +154,12 @@ def main():
     appinfo = get_app(appguid)
 
     findings_list = get_findings(appinfo,cwelist,categorylist)
+
+    if len(findings_list) == 0:
+        print("No dynamic findings for {}".format(appguid))
+        return
+    else:
+        print("Getting request/response information for {} findings. This may take a few minutes.".format(len(findings_list)))
 
     findings_details = get_request_response(findings_list)
 

@@ -34,6 +34,7 @@ Otherwise you will need to set environment variables:
 Arguments supported include:
 
 * `--appid`, `-a`: application guid for which to list a bill of materials.
+* `--prompt`, `-p`: if present, will prompt for an application name. Use instead of `-a`
 * `--cwe`, `-w` (opt): list of CWEs to include in the output. Use one of `--cwe`, `--category`
 * `--category`, `-g` (opt): list of finding categories to include in the output. Use one of `--cwe`, `--category`
 
@@ -42,4 +43,4 @@ If neither `--cwe` or `--category` are used, the preview will contain all findin
 ## NOTES
 
 1. This script runs on dynamic findings only.
-1. All values are output to a Markdown file, `vcdyndetails.md`. There are many Markdown previewers available for Mac, Linux and Windows, or you can use an online previewer like [Dillinger](https://dillinger.io/).
+1. All values are output to a Markdown file, `vcdyndetails.md`. There are many Markdown previewers available for Mac, Linux and Windows, or you can use an online previewer like [Dillinger](https://dillinger.io/) or a PDF conversion utility like [MarkdownToPdf](https://www.markdowntopdf.com/).
