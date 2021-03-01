@@ -32,7 +32,7 @@ def get_app(app_guid):
 
 def prompt_for_app():
     appguid = ""
-    app_name_search = input("Please enter the application name to search for: ")
+    app_name_search = input("Please enter the application name for which to search: ")
     app_candidates = vapi().get_app_by_name(parse.quote(app_name_search))
     if len(app_candidates) == 0:
         print("No matches were found!")
@@ -44,7 +44,7 @@ def prompt_for_app():
         try:
             if 0 < int(i) <= len(app_candidates):
                 appguid = app_candidates[int(i)-1].get('guid')
-        except:
+        except ValueError:
             appguid = ""
     else:
         appguid = app_candidates[0].get('guid')
