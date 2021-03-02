@@ -149,3 +149,4 @@ cython_debug/
 # vscode
 .vscode/
 veracode-plugin.conf
+.DS_Store
