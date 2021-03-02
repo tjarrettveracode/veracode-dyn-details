@@ -4,6 +4,7 @@ import logging
 import json
 import datetime
 import csv
+from requests import exceptions as reqexcept
 from urllib import parse
 from typing import List
 
@@ -77,11 +78,17 @@ def get_request_response(findings_list):
     finding_details_list = []
 
     for finding in findings_list: 
-        log.info('Getting finding details for flaw {})'.format(finding['issue_id']))
+        log.info('Getting finding details for finding {})'.format(finding['issue_id']))
         finding_details = { 'finding': finding }
-        finding_request_response = vapi().get_dynamic_flaw_info(finding['context_guid'],finding['issue_id'])
-        finding_details['request_response'] = finding_request_response
-        finding_details_list.append(finding_details)
+        try:
+            finding_request_response = vapi().get_dynamic_flaw_info(finding['context_guid'],finding['issue_id'])
+            finding_details['request_response'] = finding_request_response
+            finding_details_list.append(finding_details)
+        except reqexcept.RequestException: # this call may 404 if the request/response information is no longer available for an older finding
+            status = "Findings details not available for finding {}, skipping".format(finding['issue_id'])
+            log.exception(status)
+            print(status)
+
     return finding_details_list
 
 def write_findings_to_md(appinfo,findings_details_list):
@@ -101,7 +108,7 @@ def write_findings_to_md(appinfo,findings_details_list):
         mdfile.new_paragraph('**Last Seen**: {}'.format(fin['finding_status']['last_seen_date']))
         mdfile.new_paragraph('**Hostname:Port**: {}:{}'.format(fin['finding_details']['hostname'],fin['finding_details']['port']))
         mdfile.new_paragraph('**Path**: {}'.format(fin['finding_details']['path']))
-        mdfile.new_paragraph('**Vulnerable Parameter**: {}'.format(fin['finding_details']['vulnerable_parameter']))
+        mdfile.new_paragraph('**Vulnerable Parameter**: {}'.format(fin['finding_details'].get('vulnerable_parameter')))
         mdfile.new_paragraph("**Description**: {}".format(rr['issue_summary']['description']))
         mdfile.new_paragraph("**Recommendation**: {}".format(rr['issue_summary']['recommendation']))
         mdfile.new_header(level=3, title="Request",add_table_of_contents='n')
