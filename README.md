@@ -1,6 +1,6 @@
 # Veracode Dynamic Details
 
-Get a summary of all the information about dynamic flaws for an application to support remediation
+Get a summary of all the information about dynamic flaws for an application to support remediation. This includes detailed remediation information as well as request/response details.
 
 ## Setup
 
